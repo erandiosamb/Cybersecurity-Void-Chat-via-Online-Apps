@@ -1,4 +1,4 @@
 # Cybersecurity: VoidChat via Online Apps
-Implementation of an end-to-end encryption (E2EE) protocol using highly secure symmetric algorithms. This solution guarantees complete privacy for text and URLs in real time, ensuring that neither service providers nor third parties have access to the content of communications. 
+Implementation of an end-to-end encryption (E2EE) protocol using highly secure symmetric algorithms. This solution guarantees complete privacy for text and URLs in real time, ensuring that neither service providers nor third parties have access to the content of communication. Its easy usage allows it to be implemented on phones, laptops, tablets, and any other device that has access to a web navegator.
 
 The project was conceived following Instagram's policy shift on May 8th regarding End-to-End Encryption (E2EE). Concerned about data privacy and the potential use of personal conversations for AI model training, I developed a symmetric encryption solution. To ensure maximum security, the system relies on physical key exchange, effectively eliminating the risk of server-side interception or unauthorized data harvesting. 
