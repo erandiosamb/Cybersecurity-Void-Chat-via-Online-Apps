@@ -7,10 +7,11 @@
     <style>
         body { font-family: sans-serif; padding: 20px; background: #121212; color: white; }
         .container { max-width: 500px; margin: auto; }
-        textarea, input { width: 100%; margin: 10px 0; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: rgb(0, 255, 255); }
+        textarea, input { width: 100%; margin: 10px 0; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #222; color: rgb(0, 255, 255); box-sizing: border-box; }
         button { width: 48%; padding: 15px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
         .output { background: #000; padding: 15px; border: 1px dashed #555; word-break: break-all; margin-top: 20px; color: rgb(0, 255, 255); }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -27,41 +28,30 @@
     </div>
 
     <script>
-        // AES-256-GCM algorithm
-        const SALT = new TextEncoder().encode("Enter your keyphrase here");
-        const ITERATIONS = 100000;
-
-        async function deriveKeyFromPassphrase(passphrase) {
-            const encoder = new TextEncoder();
-            const baseKey = await crypto.subtle.importKey("raw", encoder.encode(passphrase), "PBKDF2", false, ["deriveKey"]);
-            return crypto.subtle.deriveKey(
-                { name: "PBKDF2", salt: SALT, iterations: ITERATIONS, hash: "SHA-256" },
-                baseKey,
-                { name: "AES-GCM", length: 256 },
-                false, ["encrypt", "decrypt"]
-            );
-        }
-
-        async function processMessage(isEncrypting) {
+        function processMessage(isEncrypting) {
             const passphrase = document.getElementById('passphrase').value;
             const text = document.getElementById('message').value;
+            
             if(!passphrase || !text) return alert("Fill in all fields");
 
             try {
-                const key = await deriveKeyFromPassphrase(passphrase);
                 if (isEncrypting) {
-                    const iv = crypto.getRandomValues(new Uint8Array(12));
-                    const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv: iv }, key, new TextEncoder().encode(text));
-                    const result = new Uint8Array([...iv, ...new Uint8Array(encrypted)]);
-                    document.getElementById('result').innerText = Array.from(result).map(b => b.toString(16).padStart(2, '0')).join('');
+                    // Ciframos usando AES estándar compatible con cualquier dispositivo de forma local
+                    const encrypted = CryptoJS.AES.encrypt(text, passphrase).toString();
+                    document.getElementById('result').innerText = encrypted;
                 } else {
-                    const data = new Uint8Array(text.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
-                    const iv = data.slice(0, 12);
-                    const decrypted = await crypto.subtle.decrypt({ name: "AES-GCM", iv: iv }, key, data.slice(12));
-                    document.getElementById('result').innerText = new TextDecoder().decode(decrypted);
+                    // Desciframos el texto
+                    const bytes = CryptoJS.AES.decrypt(text, passphrase);
+                    const decryptedText = bytes.toString(CryptoJS.enc.Utf8);
+                    
+                    if (!decryptedText) {
+                        throw new Error("Invalid password");
+                    }
+                    
+                    document.getElementById('result').innerText = decryptedText;
                 }
             } catch (e) {
-                document.getElementById('result').innerText = "⚠️ Error: Incorrect passphrase or corrupted data.";
+                document.getElementById('result').innerText = "Error: Incorrect password/Corrupted data.";
             }
         }
     </script>
